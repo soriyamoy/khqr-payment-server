@@ -1,12 +1,12 @@
-import random
-import string
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from bakong_khqr import KHQR
 from app.config import settings
-
+import logging
 
 app = FastAPI(title="KHQR Payment Service")
+
+logging.basicConfig(level=logging.INFO)
 
 
 # =========================
@@ -15,7 +15,7 @@ app = FastAPI(title="KHQR Payment Service")
 
 class PaymentRequest(BaseModel):
     amount: float
-    booking_id: str   # ASP.NET should send this
+    booking_id: str
 
 
 class PaymentStatusRequest(BaseModel):
@@ -51,12 +51,14 @@ def generate_qr(
     khqr = get_khqr_instance()
 
     try:
+        logging.info(f"Generating QR for booking {request.booking_id}")
+
         qr_string = khqr.create_qr(
             bank_account=settings.BAKONG_BANK_ACCOUNT,
             merchant_name=settings.BAKONG_MERCHANT_NAME,
             merchant_city=settings.BAKONG_MERCHANT_CITY,
             amount=request.amount,
-            currency=settings.BAKONG_DEFAULT_CURRENCY,
+            currency=settings.BAKONG_DEFAULT_CURRENCY.upper(),
             store_label=settings.BAKONG_APP_NAME,
             phone_number=settings.BAKONG_PHONE_NUMBER,
             bill_number=request.booking_id,
@@ -64,24 +66,17 @@ def generate_qr(
             static=False,
         )
 
-        deeplink = khqr.generate_deeplink(
-            qr_string,
-            callback=settings.BAKONG_CALLBACK_URL,
-            appIconUrl=settings.BAKONG_APP_ICON_URL,
-            appName=settings.BAKONG_APP_NAME,
-        )
-
         md5 = khqr.generate_md5(qr_string)
 
         return {
             "success": True,
             "qr_string": qr_string,
-            "deeplink": deeplink,
             "md5": md5,
             "bill_number": request.booking_id
         }
 
     except Exception as e:
+        logging.error(f"KHQR ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -104,8 +99,9 @@ def check_payment_status(
         return {
             "success": True,
             "status": status,
-            "is_paid": status == "PAID"
+            "is_paid": status.upper() == "PAID"
         }
 
     except Exception as e:
+        logging.error(f"VERIFY ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
