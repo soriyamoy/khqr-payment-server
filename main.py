@@ -3,7 +3,7 @@ import string
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from bakong_khqr import KHQR
-from config import settings
+from app.config import settings
 
 
 app = FastAPI(title="KHQR Payment Service")
