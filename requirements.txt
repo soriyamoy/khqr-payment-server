@@ -1,7 +1,5 @@
-fastapi==0.95.0
-uvicorn==0.23.1
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
 bakong-khqr==0.3.5
-pydantic==1.10.9
-python-dotenv==0.21.1
-
-pydantic-settings
+pydantic-settings==2.2.1
+python-dotenv==1.0.1
