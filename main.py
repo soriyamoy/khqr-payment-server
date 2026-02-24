@@ -2,7 +2,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 from decimal import Decimal, ROUND_HALF_UP
 from bakong_khqr import KHQR
-from app.config import settings  # adjust if inside app folder
+from app.config import settings
 
 app = FastAPI()
 
@@ -46,3 +46,13 @@ def generate_qr(request: PaymentRequest, x_api_key: str = Header(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/")
+def root():
+    return {"message": "KHQR Payment Server is running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
