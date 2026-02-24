@@ -1,4 +1,5 @@
 .env
 .venv/
+khqr-payment-server/.venv/
 __pycache__/
 *.pyc
